@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="style.css" rel="stylesheet" />
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="../Grd/md5.js"></script>
+    <script src="../Grd/GameReward.js"></script>
+    <script src="jquery-3.3.1.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+</head>
+
+<body class="text-center">
+    <div>
+        <div id="progressScene" style="display:none"></div>
+        <div id="loginScene" style="display:none">
+            <form id="loginForm">
+                <div class="border form-signin">
+                    <div>LOGIN</div>
+                    <div>
+                        <input type="text" id="username" placeholder="Username" />
+                    </div>
+                    <div>
+                        <input type="password" id="password" placeholder="Password" />
+                    </div>
+                    <div>
+                        <button class="btn btn-lg btn-primary btn-block" id="login" type="submit">Login</button><button id="register" class="btn btn-lg btn-block">Register</button>
+                    </div>
+                    <div class="alert-warning" id="loginMessage"></div>
+                    <div>
+                        <a href="#">Forgot your password?</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="menuScene" style="display:none"></div>
+    </div>
+    <script>
+        var reward = new GameReward({ 'net': 'TESTNET', 'appid': 'cc8b8744dbb1353393aac31d371af9a55a67df16', 'secret': '1679091c5a880faf6fb5e6087eb1b2dc4daa3db355ef2b0e64b472968cb70f0df4be00279ee2e0a53eafdaa94a151e2ccbe3eb2dad4e422a7cba7b261d923784' });
+        var currentScene;
+        function showSence(sceneId) {
+            if (currentScene) {
+                $("#" + currentScene).hide();
+            }
+            currentScene = sceneId;
+            $("#" + currentScene).show();
+        }
+        $(function () {
+            $('#loginForm').submit(function (e) {
+                e.preventDefault(e);
+                showSence("progressScene");
+                $("#loginMessage").hide();
+                reward.login($("#username").val(), $("#password").val(), function (result) {
+                    if (result.error == 0) {
+                        showSence("menuScene");
+                    }
+                    else {
+                        $("#loginMessage").show();
+                        $("#loginMessage").html(result.message);
+                        showSence('loginScene');
+                    }
+                });
+            });
+            $('#register').click(function () {
+                showSence("progressScene");
+                reward.login($("#username").val(), $("#password").val(), function (result) {
+                    if (result.error == 0) {
+                        showSence("menuScene");
+                    }
+                    else {
+                        showSence('loginScene');
+                    }
+                });
+            });
+            showSence('loginScene');
+        });
+    </script>
+</body>
+</html>
