@@ -12,7 +12,9 @@
 
 <body class="text-center">
     <div>
-        <div id="progressScene" style="display:none"></div>
+        <div id="progressScene" style="display:none">
+            <div class="loader"></div>
+        </div>
         <div id="loginScene" style="display:none">
             <form id="loginForm">
                 <div class="border form-signin">
@@ -24,7 +26,7 @@
                         <input type="password" id="password" placeholder="Password" />
                     </div>
                     <div>
-                        <button class="btn btn-lg btn-primary btn-block" id="login" type="submit">Login</button><button id="register" class="btn btn-lg btn-block">Register</button>
+                        <button class="btn btn-lg btn-primary btn-block" id="login" type="submit">Login</button><button id="register" class="btn btn-lg btn-secondary btn-block">Register</button>
                     </div>
                     <div class="alert-warning" id="loginMessage"></div>
                     <div>
@@ -33,7 +35,74 @@
                 </div>
             </form>
         </div>
-        <div id="menuScene" style="display:none"></div>
+        <div id="profilePanel" style="display: none;">
+            <div class="card">
+                <img class="qrcode" style="width:120px;margin:auto" />
+                <h1 class="title username"></h1>
+                <div><span>Address:</span><span class="address"></span></div>
+                <div><span>Balance:</span><span class="balance"></span></div>
+            </div>
+        </div>
+        <div id="otpScene" style="display:none">
+            <form id="otpForm">
+                <div class="border form-signin">
+                    <div>TWO STEP VERIFICATION</div>
+                    <div>Otp Code from device</div>
+                    <input type="hidden" id="opt_action" />
+                    <div>
+                        <input type="text" id="otp" placeholder="6 digits" />
+                    </div>
+                    <div>
+                        <button class="btn btn-lg btn-primary btn-block" id="verifyOtp" type="submit">Verify</button>
+                    </div>
+                    <div class="alert-warning" id="otpMessage"></div>
+                </div>
+            </form>
+        </div>
+        <div id="menuScene" style="display: none;">
+            <div class="card" style="margin-top:10px">
+                <div class="container">
+                    <div style="margin-top:10px">
+                        <button id="transfer" class="btn btn-warning">Transfer</button>
+                        <button id="transactions" class="btn btn-outline-secondary">Transactions</button>
+                        <button id="otpsetting" class="btn btn-primary">Otp Settings</button>
+                    </div>
+                    <div style="margin-top:10px">
+                        <button id="game1" class="btn btn-success">Random 1-9 Game</button>
+                    </div>
+                    <div style="margin-top:10px">
+                        <button id="game2" class="btn btn-success">High-low game</button>
+                    </div>
+                    <div style="margin-top:10px">
+                        <button id="logout" class="btn btn-danger">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="transferScene" style="display:none">
+            <div class="card" style="margin-top:10px">
+                <div class="container">
+                    <div style="margin-top:10px">
+                        <div >To address:</div><input type="text" id="transferTo" placeholder="Wallet address transfer to" style="min-width:300px" />
+                    </div>
+                    <div style="margin-top:10px">
+                        <div>Value:</div><input type="number" id="transferAmount" placeholder="Amount transfer" />
+                    </div>
+                    <div class="alert-danger" id="messageTransfer"></div>
+                    <div style="margin-top:10px">
+                        <button class="btn btn-success gotomenu">Back</button><button id="acceptTransfer" class="btn btn-danger">Do Transfer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="transactionScene" style="display:none">
+            <div class="card" style="margin-top:10px">
+                <h1>Transactions</h1>
+                <div class="container">
+                    <div id="transactionList"></div>
+                </div>
+            </div>
+        </div>
     </div>
     <script>
         var reward = new GameReward({ 'net': 'TESTNET', 'appid': 'cc8b8744dbb1353393aac31d371af9a55a67df16', 'secret': '1679091c5a880faf6fb5e6087eb1b2dc4daa3db355ef2b0e64b472968cb70f0df4be00279ee2e0a53eafdaa94a151e2ccbe3eb2dad4e422a7cba7b261d923784' });
@@ -44,26 +113,76 @@
             }
             currentScene = sceneId;
             $("#" + currentScene).show();
+        };
+        function showMenuScene() {
+            showSence("menuScene");
+            reward.qrcodeAddress(function (result) {
+                $(".qrcode").attr('src', result.qrcode);
+            });
+            $(".address").html(reward.User.address);
+            $(".balance").html(reward.User.balance);
+            $(".username").html(reward.User.username);
+            $("#profilePanel").show();
+        };
+        function showLoginScene() {
+            showSence("loginScene");
+            $("#profilePanel").hide();
+        }
+        function showTransferScene() {
+            showSence("transferScene");
+        }
+
+        function showOtp(otpActionId) {
+            $("#opt_action").val(otpActionId);
+            showSence("otpScene");
+        }
+        function loginCallBack(result) {
+            if (result.error == 0) {
+                showMenuScene();
+            }
+            else if (result.error == 4) {
+                //Need provide otp code:
+                showOtp('login');
+            }
+            else {
+                $("#loginMessage").show();
+                $("#loginMessage").html(result.message);
+                showSence('loginScene');
+            }
         }
         $(function () {
             $('#loginForm').submit(function (e) {
                 e.preventDefault(e);
                 showSence("progressScene");
                 $("#loginMessage").hide();
-                reward.login($("#username").val(), $("#password").val(), function (result) {
-                    if (result.error == 0) {
-                        showSence("menuScene");
-                    }
-                    else {
-                        $("#loginMessage").show();
-                        $("#loginMessage").html(result.message);
-                        showSence('loginScene');
-                    }
-                });
+                reward.login($("#username").val(), $("#password").val(), '', loginCallBack);
+            });
+            $('#otpForm').submit(function (e) {
+                e.preventDefault();
+                var action = $("#opt_action").val();
+                if (action == 'login') {
+                    reward.login($("#username").val(), $("#password").val(), $('#otp').val(), function (result) {
+                        if (result.error == 0) {
+                            showMenuScene();
+                        }
+                        else {
+                            $('#otpMessage').html(result.message);
+                        }
+                    });
+                } else if (action == 'transfer') {
+                    reward.transfer($('#transferTo').val(), $('#transferAmount').val(), $('#otp').val(), function (result) {
+                        if (result.error == 0) {
+                            showMenuScene();
+                        }
+                        else {
+                            $('#otpMessage').html(result.message);
+                        }
+                    });
+                }
             });
             $('#register').click(function () {
                 showSence("progressScene");
-                reward.login($("#username").val(), $("#password").val(), function (result) {
+                reward.register($("#username").val(), $("#password").val(), function (result) {
                     if (result.error == 0) {
                         showSence("menuScene");
                     }
@@ -72,7 +191,62 @@
                     }
                 });
             });
-            showSence('loginScene');
+            $('#logout').click(function () {
+                if (confirm('Do you really want to logout?')) {
+                    showSence("progressScene");
+                    reward.logout(function (result) {
+                        if (result.error == 0) {
+                            showLoginScene();
+                        }
+                    });
+                }
+            });
+            $('#transfer').click(function () {
+                $('#messageTransfer').hide();
+                 showSence("transferScene");
+            });
+            $('#acceptTransfer').click(function () {
+                if (reward.User.otp) {
+                    showOtp('transfer');
+                }
+                else {
+                    reward.transfer($('#transferTo').val(), $('#transferAmount').val(), '', function (result) {
+                        if (result.error == 0) {
+                            showMenuScene();
+                        }
+                        else {
+                            $('#messageTransfer').show();
+                            $('#messageTransfer').html(result.message);
+                        }
+                    });
+                }
+            });
+
+            $('#transactions').click(function () {
+                showSence("transactionScene");
+                reward.getTransactions(0, 20, function (result) {
+                    if (result.error == 0) {
+                        var html = '';
+                        for (var i = 0; i < result.transactions.length; i++) {
+                            var trans = result.transactions[i];
+                            html += '<div class="border"><span class="tx">Tx:' + trans.tx + '</span><span class="from">From:' + trans.from + '</span><span  class="to">To:' + trans.to + '</span><span class="amount">Amount:' + trans.amount + '</span><span class="transdate">Date:' + new Date(trans.transdate*1000).toLocaleString() + '</span><span class="transtype">Type:' + trans.transtype + '</span><span class="status">Status:' + (trans.status == 1 ? 'Success' : (trans.status == 0?'Pending':'<span class="alert-error">Error</span>')) + '</span></div>';
+                        }
+                        $('#transactionList').html(html);
+                    }
+                    else {
+
+                    }
+                });
+            });
+            $('.gotomenu').click(function () {
+                showMenuScene();
+            });
+            if (reward.isLogged()) {
+                showMenuScene();
+            }
+            else {
+                showLoginScene();
+            }
         });
     </script>
 </body>
