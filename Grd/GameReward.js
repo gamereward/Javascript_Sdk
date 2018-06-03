@@ -10,19 +10,12 @@ GameReward = function (options) {
     const REWARD_TEST_URL = 'https://test.gamereward.io/appapi/';
     const REWARD_MAIN_URL = 'https://gamereward.io/appapi/';
     var opts = { 'net': 'TESTNET' };
-    for (var attrname in options) { opts[attrname] = options[attrname]; }
     var serverUrl;
-    var app_id = opts['appid'];
-    var api_secret = opts['secret'];
+    var app_id='';
+    var api_secret='';
     var reward = this;
     this.User = null;
-    if (opts.net == 'MAINNET') {
-        serverUrl = REWARD_MAIN_URL;
-    }
-    else {
-        serverUrl = REWARD_TEST_URL;
-    }
-    restoreUser();
+    initInstance();
     function setCookie(cname, cvalue, exsec) {
         var d = new Date();
         d.setTime(d.getTime() + (exsec * 1000));
@@ -44,19 +37,42 @@ GameReward = function (options) {
         }
         return "";
     }
-    function restoreUser() {
-        var st = getCookie('REWARD_ACCOUNT');
+    function initInstance() {
+        var st = "";
+        if (window.sessionStorage) {
+            st = window.sessionStorage.getItem("GRD_INSTANCE");
+        }
+        else {
+            st =  getCookie('GRD_INSTANCE');
+        }
         if (st && st.length > 0) {
-            reward.User = JSON.parse(st);
+            var data=JSON.parse(st);
+            reward.User = data.user;
+            opts = data.opts;
         }
         else {
             reward.User = null;
         }
+        for (var attrname in options) { opts[attrname] = options[attrname]; }
+        app_id = opts['appid'];
+        api_secret = opts['secret'];
+        if (opts.net == 'MAINNET') {
+            serverUrl = REWARD_MAIN_URL;
+        }
+        else {
+            serverUrl = REWARD_TEST_URL;
+        }
     }
-    window.onbeforeunload = saveUser;
-    function saveUser() {
-        var st=JSON.stringify(reward.User);
-        setCookie('REWARD_ACCOUNT', st, 20);
+    window.onbeforeunload = saveInstance;
+    function saveInstance() {
+        var st = JSON.stringify({ "user": reward.User, "opts": opts});
+        if (window.sessionStorage) {
+            window.sessionStorage.setItem("GRD_INSTANCE",st);
+        }
+        else {
+            setCookie('GRD_INSTANCE', st, 20);
+        }
+        
     }
     function getRequestToken() {
         var t = Math.round(Math.round((new Date()).getTime() / 1000) / 15);
@@ -118,7 +134,12 @@ GameReward = function (options) {
     };
     this.logout = function (callback) {
         createRequest('logout', null, function (result) {
-            setCookie('REWARD_ACCOUNT', '');
+            if (window.sessionStorage) {
+                window.sessionStorage.removeItem("GRD_INSTANCE");
+            }
+            else {
+                setCookie('GRD_INSTANCE', '');
+            }
             reward.User =null;
             callback(result);
         });
@@ -157,6 +178,34 @@ GameReward = function (options) {
     };
     this.getTransactions = function (start,count, callback) {
         createRequest('transactions', { 'start': start, 'count': count }, function (result) {
+            callback(result);
+        });
+    };
+    this.requestEnableOtp = function (callback) {
+        createRequest('requestotp',null, function (result) {
+            callback(result);
+        });
+    };
+    this.enableOtp = function (enabled,otp,callback) {
+        createRequest('enableotp', { "otpoptions": (enabled ? 1 : 0), "otp": otp }, function (result) {
+            if (result.error == 0) {
+                reward.User.otp = enabled;
+            }
+            callback(result);
+        });
+    };
+    this.callserverscript = function (script, funcname,params, callback) {
+        createRequest('callserverscript', { "script": script, "fn": funcname, "vars": JSON.stringify(params) }, function (result) {
+            callback(result);
+        });
+    };
+    this.getUserSessionData = function (store, keys, start, count, callback) {
+        createRequest('getusersessiondata', { "store": store, "keys": keys, "start": start, "count": count }, function (result) {
+            callback(result);
+        });
+    };
+    this.getLeaderBoard = function (scoreType, start, count, callback) {
+        createRequest('getleaderboard', { "scoretype": scoreType, "start": start, "count": count }, function (result) {
             callback(result);
         });
     };

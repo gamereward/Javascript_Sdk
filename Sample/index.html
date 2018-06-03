@@ -63,18 +63,22 @@
             <div class="card" style="margin-top:10px">
                 <div class="container">
                     <div style="margin-top:10px">
-                        <button id="transfer" class="btn btn-warning">Transfer</button>
-                        <button id="transactions" class="btn btn-outline-secondary">Transactions</button>
-                        <button id="otpsetting" class="btn btn-primary">Otp Settings</button>
+                        <button id="transfer" class="btn btn-warning" style="width:150px">Transfer</button>
                     </div>
                     <div style="margin-top:10px">
-                        <button id="game1" class="btn btn-success">Random 1-9 Game</button>
+                        <button id="transactions" class="btn btn-outline-secondary" style="width:150px">Transactions</button>
                     </div>
                     <div style="margin-top:10px">
-                        <button id="game2" class="btn btn-success">High-low game</button>
+                        <button id="otpsetting" class="btn btn-primary" style="width:150px">Otp Settings</button>
                     </div>
                     <div style="margin-top:10px">
-                        <button id="logout" class="btn btn-danger">Logout</button>
+                        <a href="game1.html" class="btn btn-success" style="width:150px">Random 1-9 Game</a>
+                    </div>
+                    <div style="margin-top:10px">
+                        <a href="game2.html" class="btn btn-success" style="width:150px">High-low game</a>
+                    </div>
+                    <div style="margin-top:10px">
+                        <button id="logout" class="btn btn-danger" style="width:150px">Logout</button>
                     </div>
                 </div>
             </div>
@@ -83,7 +87,7 @@
             <div class="card" style="margin-top:10px">
                 <div class="container">
                     <div style="margin-top:10px">
-                        <div >To address:</div><input type="text" id="transferTo" placeholder="Wallet address transfer to" style="min-width:300px" />
+                        <div>To address:</div><input type="text" id="transferTo" placeholder="Wallet address transfer to" style="min-width:300px" />
                     </div>
                     <div style="margin-top:10px">
                         <div>Value:</div><input type="number" id="transferAmount" placeholder="Amount transfer" />
@@ -98,8 +102,50 @@
         <div id="transactionScene" style="display:none">
             <div class="card" style="margin-top:10px">
                 <h1>Transactions</h1>
+                <div><button class="btn btn-success gotomenu">Back</button></div>
                 <div class="container">
                     <div id="transactionList"></div>
+                </div>
+            </div>
+        </div>
+        <div id="otpSettingScene" style="display:none">
+            <div class="card" style="margin-top:10px">
+                <div class="container">
+                    <div style="margin-top:10px">
+                        <label><input type="checkbox" id="enableOtp" />Enable OTP Security</label>
+                    </div>
+                    <div style="margin-top:10px">
+                        <div>OTP CODE:</div>
+                        <input id="otpCodeToEnable" type="number" placeholder="OTP CODE" />
+                    </div>
+                    <div id="enableOtpPanel" style="margin-top:10px;display:none">
+                        <table>
+                            <tr>
+                                <td>Download Google Authenticatior</td>
+                                <td>
+                                    <a href="https://itunes.apple.com/app/google-authenticator/id388497605?mt=8"><img src="appstore.png" style="height:20px" /></a><br />
+                                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2"><img src="chplay.png" style="height:20px" /></a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Scan QRCode</td>
+                                <td>
+                                    <img id="otpSecretQR" />
+                                </td>
+                            </tr>
+                            <tr><td colspan="2">OR</td></tr>
+                            <tr>
+                                <td>Copy Secret</td>
+                                <td class="wrapword">
+                                    <span id="otpSecretText" style="height:200px;width:200px;display:block" class="wrapword"></span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="alert-danger" id="messageEnableOtp"></div>
+                    <div style="margin-top:10px">
+                        <button class="btn btn-success gotomenu">Back</button><button id="acceptEnableOtp" class="btn btn-secondary">Save</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -149,6 +195,11 @@
                 $("#loginMessage").html(result.message);
                 showSence('loginScene');
             }
+        }
+        function showOtpSettingSence() {
+            $('#enableOtp').prop('checked', reward.User.otp);
+            $('#enableOtpPanel').hide();
+            showSence('otpSettingScene');
         }
         $(function () {
             $('#loginForm').submit(function (e) {
@@ -203,7 +254,7 @@
             });
             $('#transfer').click(function () {
                 $('#messageTransfer').hide();
-                 showSence("transferScene");
+                showSence("transferScene");
             });
             $('#acceptTransfer').click(function () {
                 if (reward.User.otp) {
@@ -229,12 +280,51 @@
                         var html = '';
                         for (var i = 0; i < result.transactions.length; i++) {
                             var trans = result.transactions[i];
-                            html += '<div class="border"><span class="tx">Tx:' + trans.tx + '</span><span class="from">From:' + trans.from + '</span><span  class="to">To:' + trans.to + '</span><span class="amount">Amount:' + trans.amount + '</span><span class="transdate">Date:' + new Date(trans.transdate*1000).toLocaleString() + '</span><span class="transtype">Type:' + trans.transtype + '</span><span class="status">Status:' + (trans.status == 1 ? 'Success' : (trans.status == 0?'Pending':'<span class="alert-error">Error</span>')) + '</span></div>';
+                            html += '<div class="border"><span class="tx">Tx:' + trans.tx + '</span><span class="from">From:' + trans.from + '</span><span  class="to">To:' + trans.to + '</span><span class="amount">Amount:' + trans.amount + '</span><span class="transdate">Date:' + new Date(trans.transdate * 1000).toLocaleString() + '</span><span class="transtype">Type:' + (trans.transtype == 1 ? "Base" : (trans.transtype == 2 ? "Internal" : "External")) + '</span><span class="status">Status:' + (trans.status == 1 ? 'Success' : (trans.status == 0 ? 'Pending' : '<span class="alert-error">Error</span>')) + '</span></div>';
                         }
                         $('#transactionList').html(html);
                     }
                     else {
 
+                    }
+                });
+            });
+
+            $('#otpsetting').click(function () {
+                showOtpSettingSence();
+            });
+
+            $('#enableOtp').change(function () {
+                if (!reward.User.otp) {
+                    if (!($(this).is(":checked"))) {
+                        $('#enableOtpPanel').hide();
+                    }
+                    else {
+                        showSence('progressScene');
+                        reward.requestEnableOtp(function (result) {
+                            showSence('otpSettingScene');
+                            if (result.error == 0) {
+                                $('#enableOtpPanel').show();
+                                $('#otpSecretQR').attr('src', result.qrcode);
+                                $('#otpSecretText').html(result.secret);
+                            }
+                        });
+                    }
+                }
+            });
+            $('#acceptEnableOtp').click(function () {
+                showSence('progressScene');
+                reward.enableOtp($('#enableOtp').is(":checked"), $("#otpCodeToEnable").val(), function (result) {
+                    showSence('otpSettingScene');
+                    if (result.error == 0) {
+                        $('#messageEnableOtp').html(reward.User.otp ? 'You have enabled otp successfully!' : 'The otp security is turned off!');
+                        $('#messageEnableOtp').addClass('alert-success');
+                        $('#messageEnableOtp').removeClass('alert-error');
+                    }
+                    else {
+                        $('#messageEnableOtp').removeClass('alert-success');
+                        $('#messageEnableOtp').addClass('alert-error');
+                        $('#messageEnableOtp').html(result.message);
                     }
                 });
             });
