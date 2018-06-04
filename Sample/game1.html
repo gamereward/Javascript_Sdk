@@ -5,7 +5,7 @@
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <script src="../Grd/md5.js"></script>
     <script src="../Grd/GameReward.js"></script>
-    <script src="jquery-3.3.1.min.js"></script>
+    <script src="content/jquery-3.3.1.min.js"></script>
     <style>
         .select-number {
             background-color: #0092ff;
@@ -96,6 +96,9 @@
     <script>
         var reward = new GameReward();//no need options cause it save and auto restore
         var isBetting = false;
+        if (!reward.isLogged()) {
+            document.location = "index.html";
+        }
         function addHistoryItem(item) {
             var arr = item.values['rand'].split(',');
             $("#history").html('<div><div>' + (new Date(item.sessionstart * 1000).toLocaleString()) + ':' + '</div>' + 'Select:' + arr[1] + '-Result:' + arr[0] + (parseFloat(arr[2]) > 0 ? '-Win:' : '-Lose:') + arr[2] + '</div>' + $("#history").html());

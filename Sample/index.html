@@ -2,27 +2,24 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title></title>
-    <link href="style.css" rel="stylesheet" />
+    <link href="content/style.css" rel="stylesheet" />
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <script src="../Grd/md5.js"></script>
     <script src="../Grd/GameReward.js"></script>
-    <script src="jquery-3.3.1.min.js"></script>
+    <script src="content/jquery-3.3.1.min.js"></script>
     <script src="bootstrap/js/bootstrap.min.js"></script>
 </head>
 
 <body class="text-center">
     <div>
-        <div id="progressScene" style="display:none">
-            <div class="loader"></div>
-        </div>
-        <div id="loginScene" style="display:none">
+        <div id="loginPanel" style="display:none">
             <form id="loginForm">
                 <div class="border form-signin">
-                    <div>LOGIN</div>
-                    <div>
+                    <h3>LOGIN</h3>
+                    <div style="padding-top:10px">
                         <input type="text" id="username" placeholder="Username" />
                     </div>
-                    <div>
+                    <div style="padding-top:10px">
                         <input type="password" id="password" placeholder="Password" />
                     </div>
                     <div>
@@ -30,7 +27,7 @@
                     </div>
                     <div class="alert-warning" id="loginMessage"></div>
                     <div>
-                        <a href="#">Forgot your password?</a>
+                        <a href="forgotpassword.html" >Forgot your password?</a>
                     </div>
                 </div>
             </form>
@@ -43,23 +40,25 @@
                 <div><span>Balance:</span><span class="balance"></span></div>
             </div>
         </div>
-        <div id="otpScene" style="display:none">
+        <div id="progressPanel" style="display:none">
+            <div class="loader"></div>
+        </div>
+        <div id="otpPanel" style="display:none">
             <form id="otpForm">
                 <div class="border form-signin">
                     <div>TWO STEP VERIFICATION</div>
                     <div>Otp Code from device</div>
-                    <input type="hidden" id="opt_action" />
                     <div>
                         <input type="text" id="otp" placeholder="6 digits" />
                     </div>
-                    <div>
+                    <div style="padding:10px">
                         <button class="btn btn-lg btn-primary btn-block" id="verifyOtp" type="submit">Verify</button>
                     </div>
-                    <div class="alert-warning" id="otpMessage"></div>
+                    <div class="alert-warning" id="otpMessage" style="padding:10px"></div>
                 </div>
             </form>
         </div>
-        <div id="menuScene" style="display: none;">
+        <div id="menuPanel" style="display: none;">
             <div class="card" style="margin-top:10px">
                 <div class="container">
                     <div style="margin-top:10px">
@@ -83,259 +82,102 @@
                 </div>
             </div>
         </div>
-        <div id="transferScene" style="display:none">
-            <div class="card" style="margin-top:10px">
-                <div class="container">
-                    <div style="margin-top:10px">
-                        <div>To address:</div><input type="text" id="transferTo" placeholder="Wallet address transfer to" style="min-width:300px" />
-                    </div>
-                    <div style="margin-top:10px">
-                        <div>Value:</div><input type="number" id="transferAmount" placeholder="Amount transfer" />
-                    </div>
-                    <div class="alert-danger" id="messageTransfer"></div>
-                    <div style="margin-top:10px">
-                        <button class="btn btn-success gotomenu">Back</button><button id="acceptTransfer" class="btn btn-danger">Do Transfer</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="transactionScene" style="display:none">
-            <div class="card" style="margin-top:10px">
-                <h1>Transactions</h1>
-                <div><button class="btn btn-success gotomenu">Back</button></div>
-                <div class="container">
-                    <div id="transactionList"></div>
-                </div>
-            </div>
-        </div>
-        <div id="otpSettingScene" style="display:none">
-            <div class="card" style="margin-top:10px">
-                <div class="container">
-                    <div style="margin-top:10px">
-                        <label><input type="checkbox" id="enableOtp" />Enable OTP Security</label>
-                    </div>
-                    <div style="margin-top:10px">
-                        <div>OTP CODE:</div>
-                        <input id="otpCodeToEnable" type="number" placeholder="OTP CODE" />
-                    </div>
-                    <div id="enableOtpPanel" style="margin-top:10px;display:none">
-                        <table>
-                            <tr>
-                                <td>Download Google Authenticatior</td>
-                                <td>
-                                    <a href="https://itunes.apple.com/app/google-authenticator/id388497605?mt=8"><img src="appstore.png" style="height:20px" /></a><br />
-                                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2"><img src="chplay.png" style="height:20px" /></a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Scan QRCode</td>
-                                <td>
-                                    <img id="otpSecretQR" />
-                                </td>
-                            </tr>
-                            <tr><td colspan="2">OR</td></tr>
-                            <tr>
-                                <td>Copy Secret</td>
-                                <td class="wrapword">
-                                    <span id="otpSecretText" style="height:200px;width:200px;display:block" class="wrapword"></span>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="alert-danger" id="messageEnableOtp"></div>
-                    <div style="margin-top:10px">
-                        <button class="btn btn-success gotomenu">Back</button><button id="acceptEnableOtp" class="btn btn-secondary">Save</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
     <script>
         var reward = new GameReward({ 'net': 'TESTNET', 'appid': 'cc8b8744dbb1353393aac31d371af9a55a67df16', 'secret': '1679091c5a880faf6fb5e6087eb1b2dc4daa3db355ef2b0e64b472968cb70f0df4be00279ee2e0a53eafdaa94a151e2ccbe3eb2dad4e422a7cba7b261d923784' });
-        var currentScene;
-        function showSence(sceneId) {
-            if (currentScene) {
-                $("#" + currentScene).hide();
+        var currentPanel;
+        function showPanel(PanelId) {
+            if (currentPanel) {
+                $("#" + currentPanel).hide();
             }
-            currentScene = sceneId;
-            $("#" + currentScene).show();
+            currentPanel = PanelId;
+            $("#" + currentPanel).show();
         };
-        function showMenuScene() {
-            showSence("menuScene");
+        function displayAccountInfo() {
             reward.qrcodeAddress(function (result) {
                 $(".qrcode").attr('src', result.qrcode);
             });
             $(".address").html(reward.User.address);
             $(".balance").html(reward.User.balance);
             $(".username").html(reward.User.username);
+        }
+        function showMenuPanel() {
+            showPanel("menuPanel");
+            displayAccountInfo();
             $("#profilePanel").show();
         };
-        function showLoginScene() {
-            showSence("loginScene");
+        function showLoginPanel() {
+            showPanel("loginPanel");
             $("#profilePanel").hide();
         }
-        function showTransferScene() {
-            showSence("transferScene");
-        }
-
-        function showOtp(otpActionId) {
-            $("#opt_action").val(otpActionId);
-            showSence("otpScene");
+        function showOtp() {
+            showPanel("otpPanel");
         }
         function loginCallBack(result) {
             if (result.error == 0) {
-                showMenuScene();
+                showMenuPanel();
             }
             else if (result.error == 4) {
                 //Need provide otp code:
-                showOtp('login');
+                showOtp();
             }
             else {
                 $("#loginMessage").show();
                 $("#loginMessage").html(result.message);
-                showSence('loginScene');
+                showPanel('loginPanel');
             }
-        }
-        function showOtpSettingSence() {
-            $('#enableOtp').prop('checked', reward.User.otp);
-            $('#enableOtpPanel').hide();
-            showSence('otpSettingScene');
         }
         $(function () {
             $('#loginForm').submit(function (e) {
                 e.preventDefault(e);
-                showSence("progressScene");
+                showPanel("progressPanel");
                 $("#loginMessage").hide();
                 reward.login($("#username").val(), $("#password").val(), '', loginCallBack);
             });
             $('#otpForm').submit(function (e) {
                 e.preventDefault();
-                var action = $("#opt_action").val();
-                if (action == 'login') {
-                    reward.login($("#username").val(), $("#password").val(), $('#otp').val(), function (result) {
-                        if (result.error == 0) {
-                            showMenuScene();
-                        }
-                        else {
-                            $('#otpMessage').html(result.message);
-                        }
-                    });
-                } else if (action == 'transfer') {
-                    reward.transfer($('#transferTo').val(), $('#transferAmount').val(), $('#otp').val(), function (result) {
-                        if (result.error == 0) {
-                            showMenuScene();
-                        }
-                        else {
-                            $('#otpMessage').html(result.message);
-                        }
-                    });
-                }
-            });
-            $('#register').click(function () {
-                showSence("progressScene");
-                reward.register($("#username").val(), $("#password").val(), function (result) {
+                reward.login($("#username").val(), $("#password").val(), $('#otp').val(), function (result) {
                     if (result.error == 0) {
-                        showSence("menuScene");
+                        showMenuPanel();
                     }
                     else {
-                        showSence('loginScene');
+                        $('#otpMessage').html(result.message);
                     }
                 });
             });
+            $('#register').click(function () {
+                document.location = "register.html";
+            });
             $('#logout').click(function () {
                 if (confirm('Do you really want to logout?')) {
-                    showSence("progressScene");
+                    showPanel("progressPanel");
                     reward.logout(function (result) {
                         if (result.error == 0) {
-                            showLoginScene();
+                            showLoginPanel();
                         }
                     });
                 }
             });
             $('#transfer').click(function () {
-                $('#messageTransfer').hide();
-                showSence("transferScene");
-            });
-            $('#acceptTransfer').click(function () {
-                if (reward.User.otp) {
-                    showOtp('transfer');
-                }
-                else {
-                    reward.transfer($('#transferTo').val(), $('#transferAmount').val(), '', function (result) {
-                        if (result.error == 0) {
-                            showMenuScene();
-                        }
-                        else {
-                            $('#messageTransfer').show();
-                            $('#messageTransfer').html(result.message);
-                        }
-                    });
-                }
+                document.location = "transfer.html";
             });
 
             $('#transactions').click(function () {
-                showSence("transactionScene");
-                reward.getTransactions(0, 20, function (result) {
-                    if (result.error == 0) {
-                        var html = '';
-                        for (var i = 0; i < result.transactions.length; i++) {
-                            var trans = result.transactions[i];
-                            html += '<div class="border"><span class="tx">Tx:' + trans.tx + '</span><span class="from">From:' + trans.from + '</span><span  class="to">To:' + trans.to + '</span><span class="amount">Amount:' + trans.amount + '</span><span class="transdate">Date:' + new Date(trans.transdate * 1000).toLocaleString() + '</span><span class="transtype">Type:' + (trans.transtype == 1 ? "Base" : (trans.transtype == 2 ? "Internal" : "External")) + '</span><span class="status">Status:' + (trans.status == 1 ? 'Success' : (trans.status == 0 ? 'Pending' : '<span class="alert-error">Error</span>')) + '</span></div>';
-                        }
-                        $('#transactionList').html(html);
-                    }
-                    else {
-
-                    }
-                });
+                document.location = "transactionlist.html";
             });
 
             $('#otpsetting').click(function () {
-                showOtpSettingSence();
+                document.location = "otpsettings.html";
             });
 
-            $('#enableOtp').change(function () {
-                if (!reward.User.otp) {
-                    if (!($(this).is(":checked"))) {
-                        $('#enableOtpPanel').hide();
-                    }
-                    else {
-                        showSence('progressScene');
-                        reward.requestEnableOtp(function (result) {
-                            showSence('otpSettingScene');
-                            if (result.error == 0) {
-                                $('#enableOtpPanel').show();
-                                $('#otpSecretQR').attr('src', result.qrcode);
-                                $('#otpSecretText').html(result.secret);
-                            }
-                        });
-                    }
-                }
-            });
-            $('#acceptEnableOtp').click(function () {
-                showSence('progressScene');
-                reward.enableOtp($('#enableOtp').is(":checked"), $("#otpCodeToEnable").val(), function (result) {
-                    showSence('otpSettingScene');
-                    if (result.error == 0) {
-                        $('#messageEnableOtp').html(reward.User.otp ? 'You have enabled otp successfully!' : 'The otp security is turned off!');
-                        $('#messageEnableOtp').addClass('alert-success');
-                        $('#messageEnableOtp').removeClass('alert-error');
-                    }
-                    else {
-                        $('#messageEnableOtp').removeClass('alert-success');
-                        $('#messageEnableOtp').addClass('alert-error');
-                        $('#messageEnableOtp').html(result.message);
-                    }
-                });
-            });
             $('.gotomenu').click(function () {
-                showMenuScene();
+                showMenuPanel();
             });
             if (reward.isLogged()) {
-                showMenuScene();
+                showMenuPanel();
             }
             else {
-                showLoginScene();
+                showLoginPanel();
             }
         });
     </script>

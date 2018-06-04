@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="content/style.css" rel="stylesheet" />
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="../Grd/md5.js"></script>
+    <script src="../Grd/GameReward.js"></script>
+    <script src="content/jquery-3.3.1.min.js"></script>
+    <script src="bootstrap/js/bootstrap.min.js"></script>
+</head>
+
+<body class="text-center">
+    <div>
+        <div id="profilePanel">
+            <div class="card">
+                <img class="qrcode" style="width:120px;margin:auto" />
+                <h1 class="title username"></h1>
+                <div><span>Address:</span><span class="address"></span></div>
+                <div><span>Balance:</span><span class="balance"></span></div>
+            </div>
+        </div>
+        <div id="progressPanel" style="display:none">
+            <div class="loader"></div>
+        </div>
+        <div id="transactionPanel" >
+            <div class="card" style="margin-top:10px">
+                <h1>Transactions</h1>
+                <div><button class="btn btn-success gotomenu">Back</button></div>
+                <div class="container">
+                    <div id="transactionList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var reward = new GameReward();//restore from last save
+        if (!reward.isLogged()) {
+            document.location = 'index.html';
+        }
+        var currentPanel;
+        function showPanel(PanelId) {
+            if (currentPanel) {
+                $("#" + currentPanel).hide();
+            }
+            currentPanel = PanelId;
+            $("#" + currentPanel).show();
+        };
+        function displayAccountInfo() {
+            reward.qrcodeAddress(function (result) {
+                $(".qrcode").attr('src', result.qrcode);
+            });
+            $(".address").html(reward.User.address);
+            $(".balance").html(reward.User.balance);
+            $(".username").html(reward.User.username);
+        }
+
+        $(function () {
+            reward.getTransactions(0, 20, function (result) {
+                if (result.error == 0) {
+                    var html = '';
+                    for (var i = 0; i < result.transactions.length; i++) {
+                        var trans = result.transactions[i];
+                        html += '<div class="border"><span class="tx">Tx:' + trans.tx + '</span><span class="from">From:' + trans.from + '</span><span  class="to">To:' + trans.to + '</span><span class="amount">Amount:' + trans.amount + '</span><span class="transdate">Date:' + new Date(trans.transdate * 1000).toLocaleString() + '</span><span class="transtype">Type:' + (trans.transtype == 1 ? "Base" : (trans.transtype == 2 ? "Internal" : "External")) + '</span><span class="status">Status:' + (trans.status == 1 ? 'Success' : (trans.status == 0 ? 'Pending' : '<span class="alert-error">Error</span>')) + '</span></div>';
+                    }
+                    $('#transactionList').html(html);
+                }
+                else {
+
+                }
+            });
+            displayAccountInfo();
+            $('.gotomenu').click(function () {
+                document.location = 'index.html'
+            });
+        });
+    </script>
+</body>
+</html>

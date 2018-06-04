@@ -5,7 +5,7 @@
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <script src="../Grd/md5.js"></script>
     <script src="../Grd/GameReward.js"></script>
-    <script src="jquery-3.3.1.min.js"></script>
+    <script src="content/jquery-3.3.1.min.js"></script>
     <style>
         .select-number {
             background-color: #0094ff;
@@ -36,10 +36,10 @@
             <div id="game-message"></div>
             <div style="height:480px;padding-top:40px">
                 <div style="width:238px;float:left;text-align:center">
-                    <img style="width: 180px" src="cards/14_of_hearts.png" id="randCard" />
+                    <img style="width: 180px" src="content/cards/14_of_hearts.png" id="randCard" />
                 </div>
                 <div style="width:238px;float:left">
-                    <img style="width:180px" id="resultCard" src="cards/cardback.png" />
+                    <img style="width:180px" id="resultCard" src="content/cards/cardback.png" />
                 </div>
                 <div style="width: 100%; text-align: center; padding-top: 40px;clear:both">
                     LOW RATE:<span id="low-rate"></span> - HIGH RATE:<span id="high-rate"></span>
@@ -78,6 +78,9 @@
     </div>
     <script>
         var reward = new GameReward();//no need options cause it save and auto restore
+        if (!reward.isLogged()) {
+            document.location = "index.html";
+        }
         var isBetting = false;
         function addHistoryItem(item) {
             if (item.values['result'] && item.values['result']) {
@@ -115,8 +118,8 @@
             if (isBetting) return;
             randomCard.symbol = Math.round(Math.random() * 11) + 3;
             randomCard.suit = Math.round(Math.random() * 3);
-            $('#randCard').attr('src', 'cards/' + randomCard.symbol + '_of_' + suits[randomCard.suit] + ".png");
-            $('#resultCard').attr('src', 'cards/cardback.png');
+            $('#randCard').attr('src', 'content/cards/' + randomCard.symbol + '_of_' + suits[randomCard.suit] + ".png");
+            $('#resultCard').attr('src', 'content/cards/cardback.png');
             $('#high-rate').html(Math.round(10 * (randomCard.symbol - 2) / (14 - randomCard.symbol)) / 10 + "/1");
             $('#low-rate').html(Math.round(10 * (14 - randomCard.symbol) / (randomCard.symbol - 2)) / 10 + "/1");
         }
@@ -145,7 +148,7 @@
                         else {
                             $('#game-message').html('DRAW');
                         }
-                        $('#resultCard').attr('src', 'cards/' + arr[1].symbol + "_of_" + suits[arr[1].suit] + ".png");
+                        $('#resultCard').attr('src', 'content/cards/' + arr[1].symbol + "_of_" + suits[arr[1].suit] + ".png");
                         reward.User.balance += arr[2];
                         displayBalance();
                         var item = { 'sessionstart': new Date().getTime(), 'values': { 'result': '[' + low + ',' + randomCard.symbol + ',' + arr[1].symbol + ',' + arr[2] + ']' } };

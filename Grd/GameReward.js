@@ -65,7 +65,7 @@ GameReward = function (options) {
     }
     window.onbeforeunload = saveInstance;
     function saveInstance() {
-        var st = JSON.stringify({ "user": reward.User, "opts": opts});
+        var st = JSON.stringify({ "user": reward.User, "opts": opts });
         if (window.sessionStorage) {
             window.sessionStorage.setItem("GRD_INSTANCE",st);
         }
@@ -125,10 +125,17 @@ GameReward = function (options) {
                 reward.User.address = result.address;
                 reward.User.balance = parseFloat(result.balance);
                 reward.User.token = result.token;
-                if (result.optOptions) {
-                    reward.User.otp = result.optOptions > 0;
+                if (result.otpoptions) {
+                    reward.User.otp = result.otpoptions > 0;
+                }
+                else {
+                    reward.User.otp = false;
                 }
             }
+            else {
+                reward.User = null;
+            }
+            saveInstance();
             callback(result);
         });
     };
@@ -150,8 +157,8 @@ GameReward = function (options) {
             callback(result);
         });
     };
-    this.requestResetPassword = function (usernameOrEmail,  callback) {
-        createRequest('requestresetpassword', { 'username': usernameOrEmail }, function (result) {
+    this.requestResetPassword = function (email,  callback) {
+        createRequest('requestresetpassword', { 'email': email }, function (result) {
             callback(result);
         });
     };
