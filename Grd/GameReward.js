@@ -162,6 +162,11 @@ GameReward = function (options) {
             callback(result);
         });
     };
+    this.resetPassword = function (token, password, callback) {
+        createRequest('doresetpassword', { 'token': token,'password':md5(password) }, function (result) {
+            callback(result);
+        });
+    };
     this.qrcodeAddress = function (callback) {
         createRequest('qrcode', { 'text': 'gamereward:' + this.User.address, 'type': '1' }, function (result) {
             callback(result);
