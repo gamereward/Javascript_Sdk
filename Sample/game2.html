@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="../Grd/md5.js"></script>
+    <script src="../Grd/GameReward.js"></script>
+    <script src="jquery-3.3.1.min.js"></script>
+    <style>
+        .select-number {
+            background-color: #0094ff;
+            color: #ffffff;
+            width: 160px;
+            height: 160px;
+            border: solid 1px #afb3b4;
+            font-size: 24pt;
+            font-weight: bold;
+        }
+
+        #history div div {
+            background-color: #00e5ff;
+        }
+
+        .title {
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #0094ff;
+        }
+    </style>
+</head>
+<body class="text-center">
+    <div style="margin:auto;width:680px;height:420px">
+        <div class="border" style="margin:auto;width:490px;float:left">
+            <h1 class="title">HIGH-LOW GAME</h1>
+            <div>SELECT LOW OR HIGH</div>
+            <div id="game-message"></div>
+            <div style="height:480px;padding-top:40px">
+                <div style="width:238px;float:left;text-align:center">
+                    <img style="width: 180px" src="cards/14_of_hearts.png" id="randCard" />
+                </div>
+                <div style="width:238px;float:left">
+                    <img style="width:180px" id="resultCard" src="cards/cardback.png" />
+                </div>
+                <div style="width: 100%; text-align: center; padding-top: 40px;clear:both">
+                    LOW RATE:<span id="low-rate"></span> - HIGH RATE:<span id="high-rate"></span>
+                </div>
+                <div style="width: 100%; text-align: center; padding-top: 40px;clear:both">
+                    <button id="random-next-card" class="btn btn-primary" style="width: 140px; height: 40px">NEXT</button>
+                    <button id="bet-low" class="btn btn-primary" style="width:140px;height:40px">LOW</button>
+                    <button id="bet-high" class="btn btn-primary" style="width: 140px; height: 40px">HIGH</button>
+                </div>
+            </div>
+        </div>
+        <div class="border" style="width: 180px; float:left;margin-left:10px">
+            <div class="title">Balance</div>
+            <div id="accountbalance" style="height:30px;font-size:12pt;color:#ff6a00">
+            </div>
+        </div>
+        <div class="border" style="width: 180px; float:left;margin-left:10px">
+            <div class="title">BET</div>
+            <div>
+                <input placeholder="Bet" type="number" id="bet" style="text-align:center;width:178px" value="1" />
+            </div>
+        </div>
+        <div class="border" style="width: 180px; float:left;margin-left:10px">
+            <div class="title">History</div>
+            <div id="history" style="height: 214px; overflow-y: scroll">
+            </div>
+        </div>
+        <div class="border" style="width: 180px; float: left; margin-left: 10px">
+            <div class="title">Leader Board</div>
+            <div id="leaderboard" style="height: 180px; overflow-y: scroll;text-align:left ">
+            </div>
+        </div>
+        <div style="clear:both;padding-top:100px">
+            <button id="quitgame" class="btn btn-danger" style="width:150px">Quit</button>
+        </div>
+    </div>
+    <script>
+        var reward = new GameReward();//no need options cause it save and auto restore
+        var isBetting = false;
+        function addHistoryItem(item) {
+            if (item.values['result'] && item.values['result']) {
+                var arr = JSON.parse(item.values['result']);
+                $("#history").html('<div><div>' + (new Date(item.sessionstart * 1000).toLocaleString()) + ':' + '</div>' + 'Card:' + arr[1] + '-Select:' + (arr[0] == 1 ? 'LOW' : 'HIGH') + '-Result:' + arr[2] + (arr[3] == 0 ? '-DRAW' : (arr[3] > 0 ? '-Win:' : '-Lose:') + arr[3]) + '</div>' + $("#history").html());
+            }
+        }
+        function leadHistory() {
+            reward.getUserSessionData('LOWHIGHGAME', 'result', 0, 20, function (result) {
+                if (result.error == 0) {
+                    for (var i = 0; i < result.data.length; i++) {
+                        addHistoryItem(result.data[i])
+                    }
+                }
+            });
+        }
+        function addLeaderBoardItem(item) {
+            $('<div>#' + item.rank + "." + item.username + ':' + item.score + '</div>').appendTo($("#leaderboard"));
+        }
+        function loadLeaderBoard() {
+            reward.getLeaderBoard('lowhighgame_score', 0, 20, function (result) {
+                if (result.error == 0) {
+                    for (var i = 0; i < result.leaderboard.length; i++) {
+                        addLeaderBoardItem(result.leaderboard[i])
+                    }
+                }
+            });
+        }
+        function displayBalance() {
+            $("#accountbalance").html(reward.User.balance);
+        }
+        var randomCard = { 'symbol': 12, 'suit': 2 };
+        var suits = ['hearts', 'diamonds', 'spades', 'clubs'];
+        function randomNextCard() {
+            if (isBetting) return;
+            randomCard.symbol = Math.round(Math.random() * 11) + 3;
+            randomCard.suit = Math.round(Math.random() * 3);
+            $('#randCard').attr('src', 'cards/' + randomCard.symbol + '_of_' + suits[randomCard.suit] + ".png");
+            $('#resultCard').attr('src', 'cards/cardback.png');
+            $('#high-rate').html(Math.round(10 * (randomCard.symbol - 2) / (14 - randomCard.symbol)) / 10 + "/1");
+            $('#low-rate').html(Math.round(10 * (14 - randomCard.symbol) / (randomCard.symbol - 2)) / 10 + "/1");
+        }
+        function betGame(islow) {
+            if (isBetting) return;
+            isBetting = true;
+            var bet = $("#bet").val();
+            if (bet <= 0) {
+                bet = 1;
+            }
+            if (bet > reward.User.balance) {
+                bet = reward.User.balance;
+            }
+            var low = islow ? 1 : 0;
+            reward.callserverscript('testscript', 'lowhighgame', [low, randomCard.symbol, bet], function (oserver) {
+                isBetting = false;
+                if (oserver.error == 0) {
+                    var arr = oserver.result;
+                    if (arr[0] == 0) {
+                        if (arr[2] > 0) {
+                            $('#game-message').html('CONGRATULATIONS!<br/>YOU WIN:' + arr[2]);
+                        }
+                        else if (arr[2] < 0) {
+                            $('#game-message').html('NOT LUCKY. YOU LOSE:' + arr[2]);
+                        }
+                        else {
+                            $('#game-message').html('DRAW');
+                        }
+                        $('#resultCard').attr('src', 'cards/' + arr[1].symbol + "_of_" + suits[arr[1].suit] + ".png");
+                        reward.User.balance += arr[2];
+                        displayBalance();
+                        var item = { 'sessionstart': new Date().getTime(), 'values': { 'result': '[' + low + ',' + randomCard.symbol + ',' + arr[1].symbol + ',' + arr[2] + ']' } };
+                        addHistoryItem(item);
+                    }
+                    else {
+                        $('#game-message').html('Not success:' + arr[1]);
+                    }
+                }
+                else {
+                    $('#game-message').removeClass('alert-success');
+                    $('#game-message').addClass('alert-error');
+                    $('#game-message').html('Error:' + oserver.message);
+                }
+            });
+        }
+        $(function () {
+            $('#quitgame').click(function () { document.location = "index.html"; });
+            $('#random-next-card').click(function () { randomNextCard(); });
+            $('#bet-low').click(function () { betGame(true); });
+            $('#bet-high').click(function () { betGame(false); });
+            leadHistory();
+            loadLeaderBoard();
+            displayBalance();
+            randomNextCard();
+        });
+    </script>
+</body>
+</html>

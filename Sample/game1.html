@@ -2,30 +2,35 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title></title>
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" />
     <script src="../Grd/md5.js"></script>
     <script src="../Grd/GameReward.js"></script>
     <script src="jquery-3.3.1.min.js"></script>
     <style>
-        .select-number{
-            background-color:#0094ff;
-            color:#ffffff;
-            width:80px;
-            height:80px;
-            border:solid 1px #afb3b4;
-            font-size:20pt;
+        .select-number {
+            background-color: #0092ff;
+            color: #ffffff;
+            width: 160px;
+            height: 160px;
+            border: solid 1px #afb3b4;
+            font-size: 24pt;
+            font-weight:bold
         }
         #history div div{
             background-color:#00e5ff
         }
+        .title {
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #0094ff;
+        }
     </style>
 </head>
 <body class="text-center">
-    <div style="margin: auto; width: 480px;">
-        <h1>LUCKY NUMBER</h1>
-        <div>SELECT NUMBER</div>
-    </div>
     <div style="margin:auto;width:680px;height:420px">
-        <div class="border" style="margin:auto;width:245px;float:left">
+        <div class="border" style="margin:auto;width:490px;float:left">
+            <h1 class="title">LUCKY NUMBER</h1>
+            <div>SELECT NUMBER</div>
             <div id="game-message"></div>
             <table>
                 <tr>
@@ -64,14 +69,28 @@
             </table>
         </div>
         <div class="border" style="width: 180px; float:left;margin-left:10px">
-            <div>History</div>
-            <div id="history" style="height:200px;overflow-y:scroll">
+            <div class="title">Balance</div>
+            <div id="accountbalance" style="height:30px;font-size:12pt;color:#ff6a00">
             </div>
         </div>
-        <div class="border" style="width: 180px; float: left; margin-left: 10px">
-            <div>Leader Board</div>
-            <div id="leaderboard" style="height:200px;overflow-y:scroll">
+        <div class="border" style="width: 180px; float: left; margin-left: 10px; margin-top: 2px">
+            <div class="title">BET</div>
+            <div>
+                <input placeholder="Bet" type="number" id="bet" style="text-align:center;width:178px" value="1" />
             </div>
+        </div>
+        <div class="border" style="width: 180px; float: left; margin-left: 10px; margin-top: 2px">
+            <div class="title">History</div>
+            <div id="history" style="height: 200px; overflow-y: scroll">
+            </div>
+        </div>
+        <div class="border" style="width: 180px; float: left; margin-left: 10px; margin-top: 2px">
+            <div class="title">Leader Board</div>
+            <div id="leaderboard" style="height: 200px; overflow-y: scroll;text-align:left ">
+            </div>
+        </div>
+        <div style="clear:both;padding-top:100px">
+            <button id="quitgame" style="width:120px" class="btn btn-primary">Quit</button>
         </div>
     </div>
     <script>
@@ -102,12 +121,23 @@
                 }
             });
         }
+        function displayBalance() {
+            $("#accountbalance").html(reward.User.balance);
+        }
         $(function () {
             $('.select-number').click(function () {
                 if (isBetting) return;
                 isBetting = true;
                 $(this).css('background-color', '#999999');
-                reward.callserverscript('testscript', 'random9', [parseInt($(this).html()), 1], function (oserver) {
+                var number = parseInt($(this).html());
+                var bet = $("#bet").val();
+                if (bet <= 0) {
+                    bet = 1;
+                }
+                if (bet > reward.User.balance) {
+                    bet = reward.User.balance;
+                }
+                reward.callserverscript('testscript', 'random9', [number, bet], function (oserver) {
                     isBetting = false;
                     if (oserver.error == 0) {
                         var arr = oserver.result;
@@ -123,6 +153,7 @@
                                 $('#game-message').html('NOT LUCKY. YOU LOSE:' + arr[3]);
                             }
                             reward.User.balance += arr[3];
+                            displayBalance();
                             var item = { 'sessionstart': new Date().getTime(), 'values': { 'rand': arr[1] + ',' + arr[2] + ',' + arr[3] } };
                             addHistoryItem(item);
                         }
@@ -137,8 +168,10 @@
                     }
                 });
             });
+            $('#quitgame').click(function () { document.location = "index.html"; })
             leadHistory();
             loadLeaderBoard();
+            displayBalance();
         });
     </script>
 </body>
