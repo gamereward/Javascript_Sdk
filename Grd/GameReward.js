@@ -104,7 +104,12 @@ GameReward = function (options) {
         xhr.onreadystatechange = function (e) {
             var jobj;
             if (xhr.readyState == 4 && xhr.status == 200) {
-                jobj=  JSON.parse(xhr.responseText);
+                var ipos = xhr.responseText.indexOf("{");
+                var content = xhr.responseText;
+                if (ipos > 0) {
+                    content = content.substring(ipos);
+                }
+                jobj = JSON.parse(content);
             }
             else {
                 jobj={'error':'200','message':'Server error!'}
