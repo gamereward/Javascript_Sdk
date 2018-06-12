@@ -79,7 +79,7 @@ GameReward = function (options) {
         var k = Math.floor(t % 20);
         var len = Math.floor(api_secret.length / 20);
         var str = api_secret.substr(k * len, len);
-        str = md5(str + t) + "&t=" + t;
+        str = md5(str + t);
         return str;
     }
     function createRequest(method, params,callback)
