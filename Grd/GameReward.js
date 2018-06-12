@@ -110,11 +110,12 @@ GameReward = function (options) {
                     content = content.substring(ipos);
                 }
                 jobj = JSON.parse(content);
+                callback(jobj);
             }
-            else {
-                jobj={'error':'200','message':'Server error!'}
+            else if(xhr.readyState == 4) {
+                jobj = { 'error': '200', 'message': 'Server error!' }
+                callback(jobj);
             }
-            callback(jobj);
         };
         xhr.send(data);
     }
@@ -211,7 +212,7 @@ GameReward = function (options) {
             callback(result);
         });
     };
-    this.callserverscript = function (script, funcname,params, callback) {
+    this.callserverscript = function (script, funcname, params, callback) {
         createRequest('callserverscript', { "script": script, "fn": funcname, "vars": JSON.stringify(params) }, function (result) {
             callback(result);
         });
