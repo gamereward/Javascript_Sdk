@@ -194,6 +194,15 @@ GameReward = function (options) {
             callback(result);
         });
     };
+
+    this.updateBalance = function ( callback) {
+        createRequest('accountbalance', {}, function (result) {
+            if (result.error == 0) {
+                reward.User.balance = result.balance;
+            }
+            callback(result);
+        });
+    };
     this.getTransactions = function (start,count, callback) {
         createRequest('transactions', { 'start': start, 'count': count }, function (result) {
             callback(result);
@@ -214,6 +223,9 @@ GameReward = function (options) {
     };
     this.callserverscript = function (script, funcname, params, callback) {
         createRequest('callserverscript', { "script": script, "fn": funcname, "vars": JSON.stringify(params) }, function (result) {
+            if (result.error == 0) {
+                reward.User.balance = result.balance;
+            }
             callback(result);
         });
     };
